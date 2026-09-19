@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CRESTAL Order Form</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            background-color: #f4f4f9;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .form-container {
+            background-color: #fff;
+            border: 3px solid #000;
+            border-radius: 8px;
+            width: 100%;
+            max-width: 650px;
+            padding: 20px 25px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .brand-name {
+            font-size: 28px;
+            font-weight: bold;
+            font-style: italic;
+            letter-spacing: 2px;
+        }
+
+        .date-container {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .date-container input {
+            width: 50px;
+            text-align: center;
+            padding: 4px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        .row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            gap: 15px;
+        }
+
+        .field-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex: 1;
+        }
+
+        .field-group label {
+            font-size: 18px;
+            font-weight: bold;
+            white-space: nowrap;
+        }
+
+        .field-group input[type="text"],
+        .field-group input[type="number"],
+        .field-group textarea {
+            width: 100%;
+            padding: 8px 10px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            direction: rtl;
+        }
+
+        .options-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px 30px;
+            margin-bottom: 20px;
+        }
+
+        .option-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .option-item input[type="number"] {
+            width: 80px;
+            padding: 6px;
+            font-size: 16px;
+            text-align: center;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+        }
+
+        .notes-group {
+            margin-bottom: 20px;
+        }
+
+        .notes-group label {
+            display: block;
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+
+        .notes-group textarea {
+            width: 100%;
+            height: 80px;
+            padding: 10px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            resize: vertical;
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 12px;
+            background-color: #000;
+            color: #fff;
+            font-size: 18px;
+            font-weight: bold;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .submit-btn:hover {
+            background-color: #333;
+        }
+
+        #status-msg {
+            margin-top: 15px;
+            text-align: center;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+<div class="form-container">
+    <form id="orderForm">
+        <!-- Header -->
+        <div class="header">
+            <div class="brand-name">CRESTAL</div>
+            <div class="date-container">
+                <span>التاريخ:</span>
+                <input type="text" id="day" placeholder="DD" required>
+                <span>/</span>
+                <input type="text" id="month" placeholder="MM" required>
+                <span>/ 20</span>
+                <input type="text" id="year" placeholder="YY" required>
+            </div>
+        </div>
+
+        <!-- Name & Phone -->
+        <div class="row">
+            <div class="field-group">
+                <label>الاسم:</label>
+                <input type="text" id="customer_name" required>
+            </div>
+            <div class="field-group">
+                <label>رقم التليفون:</label>
+                <input type="text" id="phone" required>
+            </div>
+        </div>
+
+        <!-- Grid Options -->
+        <div class="options-grid">
+            <div class="option-item">
+                <input type="number" id="black_white" min="0" placeholder="0">
+                <label>اسود</label>
+            </div>
+            <div class="option-item">
+                <input type="number" id="color" min="0" placeholder="0">
+                <label>ألوان</label>
+            </div>
+            <div class="option-item">
+                <input type="number" id="single_side" min="0" placeholder="0">
+                <label>وجه واحد</label>
+            </div>
+            <div class="option-item">
+                <input type="number" id="double_side" min="0" placeholder="0">
+                <label>وجهين</label>
+            </div>
+            <div class="option-item">
+                <input type="number" id="copies_count" min="0" placeholder="0">
+                <label>عدد النسخ</label>
+            </div>
+            <div class="option-item">
+                <input type="number" id="booklet" min="0" placeholder="0">
+                <label>بوكليت</label>
+            </div>
+            <div class="option-item">
+                <input type="number" id="stapling" min="0" placeholder="0">
+                <label>تدبيس</label>
+            </div>
+            <div class="option-item">
+                <input type="number" id="binding" min="0" placeholder="0">
+                <label>تجليد</label>
+            </div>
+        </div>
+
+        <!-- Delivery & Receiver -->
+        <div class="row">
+            <div class="field-group">
+                <label>ميعاد التسليم:</label>
+                <input type="text" id="delivery_time">
+            </div>
+            <div class="field-group">
+                <label>المستلم:</label>
+                <input type="text" id="receiver">
+            </div>
+        </div>
+
+        <!-- Notes -->
+        <div class="notes-group">
+            <label>ملاحظات</label>
+            <textarea id="notes"></textarea>
+        </div>
+
+        <button type="submit" class="submit-btn" id="submitBtn">إرسال البيانات</button>
+        <div id="status-msg"></div>
+    </form>
+</div>
+
+<script>
+    // Replace this URL with your Google Apps Script Web App URL
+    const SCRIPT_URL = "YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL";
+
+    document.getElementById("orderForm").addEventListener("submit", function(e) {
+        e.preventDefault();
+
+        const submitBtn = document.getElementById("submitBtn");
+        const statusMsg = document.getElementById("status-msg");
+
+        submitBtn.disabled = true;
+        statusMsg.innerText = "جاري إرسال البيانات...";
+        statusMsg.style.color = "blue";
+
+        const formData = {
+            date: `${document.getElementById("day").value}/${document.getElementById("month").value}/20${document.getElementById("year").value}`,
+            customer_name: document.getElementById("customer_name").value,
+            phone: document.getElementById("phone").value,
+            black_white: document.getElementById("black_white").value || 0,
+            color: document.getElementById("color").value || 0,
+            single_side: document.getElementById("single_side").value || 0,
+            double_side: document.getElementById("double_side").value || 0,
+            copies_count: document.getElementById("copies_count").value || 0,
+            booklet: document.getElementById("booklet").value || 0,
+            stapling: document.getElementById("stapling").value || 0,
+            binding: document.getElementById("binding").value || 0,
+            delivery_time: document.getElementById("delivery_time").value,
+            receiver: document.getElementById("receiver").value,
+            notes: document.getElementById("notes").value
+        };
+
+        fetch(SCRIPT_URL, {
+            method: "POST",
+            mode: "no-cors",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(formData)
+        })
+        .then(() => {
+            statusMsg.innerText = "تم حفظ البيانات بنجاح!";
+            statusMsg.style.color = "green";
+            document.getElementById("orderForm").reset();
+            submitBtn.disabled = false;
+        })
+        .catch(error => {
+            statusMsg.innerText = "حدث خطأ أثناء الإرسال.";
+            statusMsg.style.color = "red";
+            submitBtn.disabled = false;
+            console.error("Error!", error.message);
+        });
+    });
+</script>
+
+</body>
+</html>

@@ -51,6 +51,14 @@
             gap: 15px;
         }
 
+        /* Mobile layout adjustments for phone and receiver fields */
+        @media (max-width: 600px) {
+            .row {
+                flex-direction: column;
+                gap: 15px;
+            }
+        }
+
         .field-group {
             display: flex;
             align-items: center;
@@ -67,6 +75,7 @@
         .field-group input[type="text"],
         .field-group input[type="number"],
         .field-group input[type="datetime-local"],
+        .field-group input[type="file"],
         .field-group textarea {
             width: 100%;
             padding: 8px 10px;
@@ -74,6 +83,23 @@
             border: 1px solid #ccc;
             border-radius: 6px;
             direction: rtl;
+        }
+
+        .file-upload-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            margin-bottom: 20px;
+        }
+
+        .file-upload-group label {
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .file-hint {
+            font-size: 13px;
+            color: #666;
         }
 
         .section-title {
@@ -89,7 +115,12 @@
             margin-bottom: 20px;
         }
 
-        /* Styling radio buttons as rectangular boxes */
+        @media (max-width: 600px) {
+            .radio-group-container {
+                flex-direction: column;
+            }
+        }
+
         .custom-radio {
             position: relative;
             flex: 1;
@@ -183,7 +214,7 @@
             <div class="brand-name">CRESTAL</div>
         </div>
 
-        <!-- Name & Phone -->
+        <!-- Name & Phone (Stacks on Mobile) -->
         <div class="row">
             <div class="field-group">
                 <label>الاسم:</label>
@@ -195,7 +226,19 @@
             </div>
         </div>
 
-        <!-- 1. Color Selection Group (Choose 1) -->
+        <!-- Printable File Upload Field -->
+        <div class="file-upload-group">
+            <label>رفع الملف:</label>
+
+            <input 
+                type="file" 
+                id="printable_file" 
+                accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.png,.jpg,.jpeg,.tiff,.bmp"
+            >
+            <span class="file-hint">الملفات المسموح بها: PDF, Word, PowerPoint, Excel, الصور (الحد الأقصى: 100 ميجابايت)</span>
+        </div>
+
+        <!-- 1. Color Selection Group -->
         <div class="section-title">نوع الطباعة:</div>
         <div class="radio-group-container">
             <div class="custom-radio">
@@ -208,7 +251,7 @@
             </div>
         </div>
 
-        <!-- 2. Page Type Group (Choose 1) -->
+        <!-- 2. Page Type Group -->
         <div class="section-title">نوع الصفحة / الطباعة:</div>
         <div class="radio-group-container">
             <div class="custom-radio">
@@ -225,7 +268,7 @@
             </div>
         </div>
 
-        <!-- 3. Finishing Group (Choose 1) -->
+        <!-- 3. Finishing Group -->
         <div class="section-title">الإنهاء والتقفيل:</div>
         <div class="radio-group-container">
             <div class="custom-radio">
@@ -246,7 +289,7 @@
             </div>
         </div>
 
-        <!-- Delivery & Receiver -->
+        <!-- Delivery & Receiver (Stacks on Mobile) -->
         <div class="row">
             <div class="field-group">
                 <label>ميعاد التسليم:</label>
@@ -278,47 +321,75 @@
 
         const submitBtn = document.getElementById("submitBtn");
         const statusMsg = document.getElementById("status-msg");
+        const fileInput = document.getElementById("printable_file");
 
         submitBtn.disabled = true;
-        statusMsg.innerText = "جاري إرسال البيانات...";
+        statusMsg.innerText = "جاري رفع البيانات والملف...";
         statusMsg.style.color = "blue";
 
-        // Helper function to get value of selected radio button in a group
         const getSelectedRadioValue = (name) => {
             const selected = document.querySelector(`input[name="${name}"]:checked`);
             return selected ? selected.value : "";
         };
 
-        const formData = {
-            customer_name: document.getElementById("customer_name").value,
-            phone: document.getElementById("phone").value,
-            color_type: getSelectedRadioValue("color_type"),
-            page_type: getSelectedRadioValue("page_type"),
-            finishing_type: getSelectedRadioValue("finishing_type"),
-            copies_count: document.getElementById("copies_count").value || 1,
-            delivery_time: document.getElementById("delivery_time").value,
-            receiver: document.getElementById("receiver").value,
-            notes: document.getElementById("notes").value
-        };
+        const file = fileInput.files[0];
 
-        fetch(SCRIPT_URL, {
-            method: "POST",
-            mode: "no-cors",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(formData)
-        })
-        .then(() => {
-            statusMsg.innerText = "تم حفظ البيانات بنجاح!";
-            statusMsg.style.color = "green";
-            document.getElementById("orderForm").reset();
-            submitBtn.disabled = false;
-        })
-        .catch(error => {
-            statusMsg.innerText = "حدث خطأ أثناء الإرسال.";
+        // Ensure file is within 100MB limit
+        if (file && file.size > 100 * 1024 * 1024) {
+            statusMsg.innerText = "حجم الملف يتجاوز 100 ميجابايت.";
             statusMsg.style.color = "red";
             submitBtn.disabled = false;
-            console.error("Error!", error.message);
-        });
+            return;
+        }
+
+        const sendData = (fileData = null) => {
+            const formData = {
+                customer_name: document.getElementById("customer_name").value,
+                phone: document.getElementById("phone").value,
+                color_type: getSelectedRadioValue("color_type"),
+                page_type: getSelectedRadioValue("page_type"),
+                finishing_type: getSelectedRadioValue("finishing_type"),
+                copies_count: document.getElementById("copies_count").value || 1,
+                delivery_time: document.getElementById("delivery_time").value,
+                receiver: document.getElementById("receiver").value,
+                notes: document.getElementById("notes").value,
+                file: fileData
+            };
+
+            fetch(SCRIPT_URL, {
+                method: "POST",
+                mode: "no-cors",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(formData)
+            })
+            .then(() => {
+                statusMsg.innerText = "تم حفظ البيانات والملف بنجاح!";
+                statusMsg.style.color = "green";
+                document.getElementById("orderForm").reset();
+                submitBtn.disabled = false;
+            })
+            .catch(error => {
+                statusMsg.innerText = "حدث خطأ أثناء الإرسال.";
+                statusMsg.style.color = "red";
+                submitBtn.disabled = false;
+                console.error("Error!", error.message);
+            });
+        };
+
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const base64Data = e.target.result.split(',')[1];
+                sendData({
+                    base64: base64Data,
+                    mimeType: file.type,
+                    fileName: file.name
+                });
+            };
+            reader.readAsDataURL(file);
+        } else {
+            sendData();
+        }
     });
 </script>
 

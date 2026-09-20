@@ -313,89 +313,82 @@
 </div>
 
 <script>
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx1ogt4zitBHkkz_4EmDpUdtOZuH-oMpoPjtpN_0QdqqwwA6O4mL03r-BQrJEDgF2OJ/exec";
 
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx1ogt4zitBHkkz_4EmDpUdtOZuH-oMpoPjtpN_0QdqqwwA6O4mL03r-BQrJEDgF2OJ/exec";
+    document.getElementById("orderForm").addEventListener("submit", function(e) {
+        e.preventDefault();
 
-document.getElementById("orderForm").addEventListener("submit", function(e) {
-    e.preventDefault();
+        const submitBtn = document.getElementById("submitBtn");
+        const statusMsg = document.getElementById("status-msg");
+        const fileInput = document.getElementById("printable_file");
 
-    const submitBtn = document.getElementById("submitBtn");
-    const statusMsg = document.getElementById("status-msg");
-    const fileInput = document.getElementById("printable_file");
+        submitBtn.disabled = true;
+        statusMsg.innerText = "جاري رفع البيانات والملف...";
+        statusMsg.style.color = "blue";
 
-    submitBtn.disabled = true;
-    statusMsg.innerText = "جاري رفع البيانات والملف...";
-    statusMsg.style.color = "blue";
-
-    const getSelectedRadioValue = (name) => {
-        const selected = document.querySelector(`input[name="${name}"]:checked`);
-        return selected ? selected.value : "";
-    };
-
-    const file = fileInput.files[0];
-
-    if (file && file.size > 100 * 1024 * 1024) {
-        statusMsg.innerText = "حجم الملف يتجاوز 100 ميجابايت.";
-        statusMsg.style.color = "red";
-        submitBtn.disabled = false;
-        return;
-    }
-
-    const sendPayload = (fileData = null) => {
-        const formData = {
-            customer_name: document.getElementById("customer_name").value,
-            phone: document.getElementById("phone").value,
-            color_type: getSelectedRadioValue("color_type"),
-            page_type: getSelectedRadioValue("page_type"),
-            finishing_type: getSelectedRadioValue("finishing_type"),
-            copies_count: document.getElementById("copies_count").value || 1,
-            delivery_time: document.getElementById("delivery_time").value,
-            receiver: document.getElementById("receiver").value,
-            notes: document.getElementById("notes").value,
-            file: fileData
+        const getSelectedRadioValue = (name) => {
+            const selected = document.querySelector(`input[name="${name}"]:checked`);
+            return selected ? selected.value : "";
         };
 
-        fetch(SCRIPT_URL, {
-            method: "POST",
-            headers: { "Content-Type": "text/plain;charset=utf-8" },
-            body: JSON.stringify(formData)
-        })
-        .then(response => response.json())
-        .then(res => {
-            if (res.result === "success") {
+        const file = fileInput.files[0];
+
+        // Google Apps Script payload safe limit for Base64 strings is ~25MB
+        if (file && file.size > 25 * 1024 * 1024) {
+            statusMsg.innerText = "حجم الملف يتجاوز الحد الأقصى المسموح لرفعه مباشرة (25 ميجابايت).";
+            statusMsg.style.color = "red";
+            submitBtn.disabled = false;
+            return;
+        }
+
+        const sendPayload = (fileData = null) => {
+            const formData = {
+                customer_name: document.getElementById("customer_name").value,
+                phone: document.getElementById("phone").value,
+                color_type: getSelectedRadioValue("color_type"),
+                page_type: getSelectedRadioValue("page_type"),
+                finishing_type: getSelectedRadioValue("finishing_type"),
+                copies_count: document.getElementById("copies_count").value || 1,
+                delivery_time: document.getElementById("delivery_time").value,
+                receiver: document.getElementById("receiver").value,
+                notes: document.getElementById("notes").value,
+                file: fileData
+            };
+
+            fetch(SCRIPT_URL, {
+                method: "POST",
+                mode: "no-cors",
+                headers: { "Content-Type": "text/plain;charset=utf-8" },
+                body: JSON.stringify(formData)
+            })
+            .then(() => {
                 statusMsg.innerText = "تم حفظ البيانات والملف بنجاح!";
                 statusMsg.style.color = "green";
                 document.getElementById("orderForm").reset();
-            } else {
-                statusMsg.innerText = "حدث خطأ: " + res.error;
+                submitBtn.disabled = false;
+            })
+            .catch(error => {
+                statusMsg.innerText = "حدث خطأ أثناء الإرسال: " + error.message;
                 statusMsg.style.color = "red";
-            }
-            submitBtn.disabled = false;
-        })
-        .catch(error => {
-            statusMsg.innerText = "تم إرسال الطلب بنجاح!";
-            statusMsg.style.color = "green";
-            document.getElementById("orderForm").reset();
-            submitBtn.disabled = false;
-        });
-    };
-
-    if (file) {
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            const base64Data = e.target.result.split(',')[1];
-            sendPayload({
-                base64: base64Data,
-                mimeType: file.type || "application/octet-stream",
-                fileName: file.name
+                submitBtn.disabled = false;
             });
         };
-        reader.readAsDataURL(file);
-    } else {
-        sendPayload();
-    }
-});
 
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const base64Data = e.target.result.split(',')[1];
+                sendPayload({
+                    base64: base64Data,
+                    mimeType: file.type || "application/octet-stream",
+                    fileName: file.name
+                });
+            };
+            reader.readAsDataURL(file);
+        } else {
+            sendPayload();
+        }
+    });
 </script>
 
 </body>
